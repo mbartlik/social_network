@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %}Edit Profile{% endblock %}</h1>
+
+<form method='post'>
+	<hr>
+	<div><b>Name</b></div>
+	<div><input name='name' value='{{ name }}'></input></div>
+	<div><b>Username</b></div>
+	<div><input name='username' value='{{ username }}'></input></div>
+	<div><b>Bio</b></div>
+	<div><textarea name='bio'>{{ bio }}</textarea></div>
+	<hr>
+	<div><button type="submit" value="Submit">Submit</button>
+</form>
+	
+{% endblock %}

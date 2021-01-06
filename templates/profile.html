@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %} {{ username }} {% endblock %}</h1>
+
+	{% if logged_in %}
+		{% if following %}
+			<a href="{{ url_for('follow_operation', user_id=user_id, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following) }}">Unfollow</a>
+		{% endif %}
+
+		{% if not following %}
+			<a href="{{ url_for('follow_operation', user_id=user_id, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following) }}">Follow</a>
+		{% endif %}
+	{% endif %}
+
+	{% if not logged_in %}
+		<a href="{{ url_for('login') }}">Follow</a>
+	{% endif %}
+
+<hr>
+
+<div>
+	<div>
+		<a href="{{ url_for('followers', user_id=user_id, logged_in=logged_in, profile_id=profile_id) }}">Followers</a>
+		<a style="padding-left: 5px" href="{{ url_for('following', user_id=user_id, logged_in=logged_in, profile_id=profile_id) }}">Following</a>
+	</div>
+
+	<span>
+		<img src="{{ profile_pic }}" alt="Could not load profile image" width="350">
+	</span>
+	<span>
+		<b><h3>{{ name }}</h3></b>
+		<p style="font-size: medium">{{ bio }}</p>
+	</span>
+
+	<hr>
+
+
+</div>
+
+{% for post in posts %}
+	<div style="padding-top: 50px">
+		<img src="{{ post[1] }}" alt="Failure" width="400">
+		<div>
+			<h6>{{ post[2] }}</h6>
+		</div>
+	</div>
+	<hr>
+{% endfor %}
+
+
+
+{% endblock %}

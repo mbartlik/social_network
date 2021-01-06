@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %} Feed {% endblock %}</h1>
+
+<hr>
+
+{% for post in posts %}
+	<div style="padding-top: 50px">
+		<div>
+			<a href="{{ url_for('profile', user_id=user_id, logged_in=logged_in, profile_id=post[6]) }}">{{ post[7] }}</a>
+		</div>
+		<img src="{{ post[1] }}" alt="Failure" width="400">
+		<div>
+			<h6>{{ post[2] }}</h6>
+		</div>
+	</div>
+	<hr>
+{% endfor %}
+
+
+{% endblock %}

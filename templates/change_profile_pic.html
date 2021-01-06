@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %}Change Profile Picture{% endblock %}</h1>
+
+	<form action = "{{ url_for('execute_change_profile_pic', user_id=user_id) }}" method = "POST" 
+	         enctype = "multipart/form-data">
+	         <input type = "file" name = "file" />
+	         <input type = "submit"/>
+	      </form> 
+	
+{% endblock %}

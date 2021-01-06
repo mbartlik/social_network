@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %} Login {% endblock %}</h1>
+
+	<form method="post">
+		<input name="username" placeholder="Username"></input>
+		<input type="password" name="password" placeholder="Password"></input>
+		<button type="submit" value="Submit">Submit</button>
+	</form>
+
+	<hr>
+	<div>
+		<a href="{{ url_for('create_account') }}">Create Account</a>
+	</div>
+
+{% endblock %}

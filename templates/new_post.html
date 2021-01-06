@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %}New Post{% endblock %}</h1>
+
+<form action = "{{ url_for('new_post_execute', user_id=user_id) }}" method = "POST" 
+	         enctype = "multipart/form-data">
+
+			Image: <input type = "file" name = "file" />
+
+			<div style="padding-top: 10px">
+				<textarea name="caption" placeholder="Caption"></textarea>
+			</div>
+
+			<hr>
+
+			<div>
+				<input type = "submit"/>
+			</div>
+</form> 
+
+{% endblock %}

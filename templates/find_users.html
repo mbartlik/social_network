@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %}Find Users{% endblock %}</h1>
+
+<ul>
+{% for user in users %}
+
+	{% if user[0] != int_user_id %}
+		<li>
+			<a href="{{ url_for('profile', user_id=user_id, logged_in=logged_in, profile_id=user[0]) }}">{{ user[1] }}</a>
+		</li>
+	{% endif %}
+
+{% endfor %}
+</ul>
+
+
+
+{% endblock %}
