@@ -4,6 +4,7 @@ from os import path
 import pymysql
 import jwt
 import datetime
+from PIL import Image
 
 
 ROOT = path.dirname(path.relpath(__file__)) # gets the location on computer of this directory
@@ -122,11 +123,22 @@ def edit_user_info(user_id, name, bio, username, password, profile_pic, num_post
 
 # function to upload an image to google cloud storage
 def upload_blob(file, destination_blob_name):
+	# open file with PIL Image to see if the file is of a proper type
+	try:
+		image = Image.open(file)
+	except:
+		return False # return false to signify the image is invalid
+
+	file.seek(0)
+
+	# boilerplate google cloud storage upload
 	storage_client = storage.Client()
 	bucket = storage_client.bucket('social_net_images')
 	blob = bucket.blob(destination_blob_name)
 
 	blob.upload_from_file(file)
+
+	return True
 
 # Function to delete a blob from google cloud storage
 def delete_blob(blob_name):
@@ -163,7 +175,11 @@ def add_post(user_id, file, caption):
 	post_image_url = 'https://storage.googleapis.com/social_net_images/' + post_image_identifier
 	
 	# upload image
-	upload_blob(file, post_image_identifier)
+	valid = upload_blob(file, post_image_identifier)
+
+	# if the image was invalid then pass the false back through to main
+	if not valid:
+		return False
 
 	# make strings that will later be populated to store comment and like data
 	comments = "$&%*"
@@ -177,6 +193,8 @@ def add_post(user_id, file, caption):
 
 	conn.commit()
 	conn.close()
+
+	return True
 
 # Function to return all of the posts of a given user
 def get_posts(user_id):
@@ -323,10 +341,6 @@ def delete_post_operation(post_id):
 
 	conn.commit()
 	conn.close()
-
-# Function to check if a file has a valid extension and can be uploaded
-def check_valid_file(f):
-	return True
 
 
 

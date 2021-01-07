@@ -163,14 +163,24 @@ def execute_change_profile_pic(token):
 		profile_location = 'profile_pic-' + str(user_id) + '-' + str(profile_count)
 
 		if user_info[0][3] == 'https://storage.googleapis.com/social_net_images/generic_profile_pic.png':
-			upload_blob(f, profile_location)
+			valid = upload_blob(f, profile_location)
+			# if the image is invalid flash warning and redirect to new post page
+			if not valid:
+				flash("Something went wrong. Make sure your image is of a supported type like JPG or PNG.")
+				return redirect(url_for('change_profile_pic', token=token))
+
 			edit_user_info(user_id, name, bio, username, password, 'https://storage.googleapis.com/social_net_images/'+profile_location, num_posts, profile_count+1)
 		else:
-			upload_blob(f, profile_location)
+			valid = upload_blob(f, profile_location)
+			# if the image is invalid flash warning and redirect to new post page
+			if not valid:
+				flash("Something went wrong. Make sure your image is of a supported type like JPG or PNG.")
+				return redirect(url_for('change_profile_pic', token=token))
+
 			edit_user_info(user_id, name, bio, username, password, 'https://storage.googleapis.com/social_net_images/'+profile_location, num_posts, profile_count+1)
 
 
-	return render_template('my_profile.html', token=token, name=name, bio=bio, profile_pic=get_user_info(user_id)[0][3], username=username, logged_in=True)
+	return redirect(url_for('my_profile', token=token))
 
 
 # Route to bring a logged in user to a page where they can logout
@@ -202,16 +212,15 @@ def new_post_execute(token):
 
 	# get form data
 	f = request.files['file']
-
-	# check for valid file type, if not valid redirect to profile page
-	file_validity = check_valid_file(f)
-	if not file_validity:
-		return redirect(url_for('my_profile', token=token))
-
 	f.seek(0)
 	caption = request.form['caption']
 
-	add_post(user_id, f, caption)
+	valid = add_post(user_id, f, caption)
+
+	# if the image is invalid flash warning and redirect to new post page
+	if not valid:
+		flash("Something went wrong. Make sure your image is of a supported type like JPG or PNG.")
+		return redirect(url_for('new_post', token=token))
 
 	return redirect(url_for('my_profile', token=token))
 
