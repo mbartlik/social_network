@@ -6,11 +6,11 @@
 
 	{% if logged_in %}
 		{% if following %}
-			<a href="{{ url_for('follow_operation', user_id=user_id, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following) }}">Unfollow</a>
+			<a href="{{ url_for('follow_operation', token=token, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following) }}">Unfollow</a>
 		{% endif %}
 
 		{% if not following %}
-			<a href="{{ url_for('follow_operation', user_id=user_id, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following) }}">Follow</a>
+			<a href="{{ url_for('follow_operation', token=token, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following) }}">Follow</a>
 		{% endif %}
 	{% endif %}
 
@@ -22,8 +22,8 @@
 
 <div>
 	<div>
-		<a href="{{ url_for('followers', user_id=user_id, logged_in=logged_in, profile_id=profile_id) }}">Followers</a>
-		<a style="padding-left: 5px" href="{{ url_for('following', user_id=user_id, logged_in=logged_in, profile_id=profile_id) }}">Following</a>
+		<a href="{{ url_for('followers', profile_id=profile_id, token=token) }}">Followers</a>
+		<a style="padding-left: 5px" href="{{ url_for('following', profile_id=profile_id, token=token) }}">Following</a>
 	</div>
 
 	<span>

@@ -4,20 +4,20 @@
 
 <h1>{% block title %}{{ username }}{% endblock %}
 <div>
-	<a style="font-size: 20px" href="{{ url_for('edit_profile', user_id=user_id, name=name, bio=bio, profile_pic=profile_pic, username=username) }}">Edit Profile</a>
+	<a style="font-size: 20px" href="{{ url_for('edit_profile', token=token, name=name, bio=bio, profile_pic=profile_pic, username=username) }}">Edit Profile</a>
 </div>
 
 <hr>
 
 <div>
 	<div>
-		<a style="font-size: 18px" href="{{ url_for('followers', user_id=user_id, logged_in=logged_in, profile_id=user_id) }}">Followers</a>
-		<a style="padding-left: 5px; font-size:18px" href="{{ url_for('following', user_id=user_id, logged_in=logged_in, profile_id=user_id) }}">Following</a>
+		<a style="font-size: 18px" href="{{ url_for('followers', token=token, profile_id=user_id) }}">Followers</a>
+		<a style="padding-left: 5px; font-size:18px" href="{{ url_for('following', token=token, profile_id=user_id) }}">Following</a>
 	</div>
 
 	<span>
 		<img src="{{ profile_pic }}" alt="Could not load profile image" width="350">
-		<h6><a href="{{ url_for('change_profile_pic', user_id=user_id) }}">Change Profile Picture</a></h6>
+		<h6><a href="{{ url_for('change_profile_pic', token=token) }}">Change Profile Picture</a></h6>
 	</span>
 	<span>
 		<b><h3>{{ name }}</h3></b>
@@ -36,7 +36,7 @@
 			<h6>{{ post[2] }}</h6>
 		</div>
 	</div>
-	<form action="{{ url_for('delete_post', user_id=user_id, post_id=post[0]) }}">
+	<form action="{{ url_for('delete_post', token=token, post_id=post[0]) }}">
         <input type="submit" value="Delete Post"
             class="btn btn-danger btn-sm"
             onclick="return confirm('Are you sure you want to delete this post?')">

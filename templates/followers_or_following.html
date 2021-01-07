@@ -19,7 +19,7 @@
 <ul>
 {% for user in users %}
 	<li>
-		<a href="{{ url_for('profile', profile_id=user[0][0], user_id=user_id) }}">{{ user[0][4] }}</a>
+		<a href="{{ url_for('profile', profile_id=user[0][0], token=token) }}">{{ user[0][4] }}</a>
 	</li>
 {% endfor %}
 

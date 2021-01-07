@@ -12,7 +12,7 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-light bg-light">
-        <a class="navbar-brand" href="{{ url_for('feed', user_id=user_id)}}">Social Network</a>
+        <a class="navbar-brand" href="{{ url_for('feed', token=token)}}">Social Network</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -22,15 +22,15 @@
                 <ul class="navbar-nav">
 
                 <li class="nav-item active">
-                    <a class="nav-link" href="{{ url_for('find_users', user_id=user_id, logged_in=logged_in) }}">Find Users</a>
+                    <a class="nav-link" href="{{ url_for('find_users', token=token) }}">Find Users</a>
                 </li>
                     
                 <li class="nav-item active">
-                    <a class="nav-link" href="{{ url_for('my_profile', user_id=user_id) }}">My Profile</a>
+                    <a class="nav-link" href="{{ url_for('my_profile', token=token) }}">My Profile</a>
                 </li>
 
                 <li class="nav-item active">
-                    <a class="nav-link" href="{{ url_for('new_post', user_id=user_id) }}">New Post</a>
+                    <a class="nav-link" href="{{ url_for('new_post', token=token) }}">New Post</a>
                 </li>
 
                 </ul>
@@ -60,7 +60,7 @@
                 </li>
 
                 <li class="nav-item active">
-                    <a class="nav-link" href="{{ url_for('find_users', user_id=-1, logged_in=logged_in) }}">Find Users</a>
+                    <a class="nav-link" href="{{ url_for('find_users', token=-1) }}">Find Users</a>
                 </li>
 
                 </ul>

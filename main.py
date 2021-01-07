@@ -7,32 +7,40 @@ from models import *
 app = Flask(__name__) # creates server object
 app.config['SECRET_KEY'] = 'GEBVNJKSDLEJQ'
 
+
+# Homepage route redirects to login page
+@app.route('/')
+def index():
+	return redirect(url_for('login'))
+
 # Route to display a user's feed
 # Loads all posts of people that the current user is following
-# The default user_id of -1 will allow a user to look at public posts without logging in
-@app.route('/', methods=['GET','POST'])
-def feed():
-	user_id = request.args.get('user_id')
-	if user_id == "":
-		user_id = -1
+# The default token of -1 will allow a user to look at public posts without logging in
+@app.route('/feed/<token>', methods=['GET','POST'])
+def feed(token="-1"):
+	# if the token is default -1 then the user is not logged in
+	if token == "-1":
+		return redirect(url_for('login'))
 
-	logged_in = check_logged_in(user_id)
-
-	# redirect to login page if the user is not logged in
-	if not logged_in:
+	# check if the user is still authenticated
+	user_id = authenticate_token(token)
+	if user_id == -1:
+		flash('Login expired due to inactivity')
 		return redirect(url_for('login'))
 
 	# get the posts of all the users that this user follows
 	posts = get_posts_following(user_id)
 
-	return render_template('feed.html',user_id=user_id, logged_in=logged_in, posts=posts)
+	if len(posts) == 0:
+		flash('Follow other users to see posts in your feed!')
+
+	return render_template('feed.html', token=token, logged_in=True, posts=posts)
 
 
 
 # Route to allow user input of login credentials
 @app.route('/login', methods=['GET','POST'])
 def login():
-
 	# if the method is post then the user clicked submit, must check info
 	if request.method == 'POST':
 		username = request.form['username']
@@ -41,8 +49,9 @@ def login():
 		if user_id == -1:
 			flash('Invalid Username or Password!')
 		else:
-			return redirect(url_for('feed',user_id=user_id))
-	return render_template('login.html', logged_in=False)
+			token = get_token(user_id)
+			return redirect(url_for('feed',token=token))
+	return render_template('login.html', logged_in=False, token=-1)
 
 
 # Route for auser to create a new account
@@ -61,17 +70,21 @@ def create_account():
 		# TODO: ERROR CHECKING HERE
 
 		user_id = add_user(name, bio, username, password)
+		token = get_token(user_id)
 
-		return redirect(url_for('feed', user_id=user_id))
+		return redirect(url_for('feed', token=token))
 
-	return render_template('create_account.html', logged_in=False)
+	return render_template('create_account.html', logged_in=False, token=-1)
 
 
 # Route for a user to view their profile
-@app.route('/my-profile')
-def my_profile():
-
-	user_id = request.args.get('user_id')
+@app.route('/my-profile/<token>')
+def my_profile(token):
+	# check if the user is still authenticated
+	user_id = authenticate_token(token)
+	if user_id == -1:
+		flash('Login expired due to inactivity')
+		return redirect(url_for('login'))
 
 	user_info = get_user_info(user_id)
 	name = user_info[0][1]
@@ -80,15 +93,18 @@ def my_profile():
 	username = user_info[0][4]
 
 	posts = get_posts(user_id)
-	print(posts)
 
-	return render_template('my_profile.html', user_id=user_id, name=name, bio=bio, profile_pic=profile_pic, username=username, logged_in=True, posts=posts)
+	return render_template('my_profile.html', token=token, user_id=user_id, name=name, bio=bio, profile_pic=profile_pic, username=username, logged_in=True, posts=posts)
 
 
 # Route for user to edit their profile
-@app.route('/edit-profile', methods=['GET', 'POST'])
-def edit_profile():
-	user_id = request.args.get('user_id')
+@app.route('/edit-profile/<token>', methods=['GET', 'POST'])
+def edit_profile(token):
+	# check if the user is still authenticated
+	user_id = authenticate_token(token)
+	if user_id == -1:
+		flash('Login expired due to inactivity')
+		return redirect(url_for('login'))
 
 	user_info = get_user_info(user_id)
 	name = user_info[0][1]
@@ -104,22 +120,31 @@ def edit_profile():
 		bio = request.form['bio']
 		username = request.form['username']
 		edit_user_info(user_id, name, bio, username, password, profile_pic, num_posts, profile_count)
-		return redirect(url_for('my_profile', user_id=user_id))
+		return redirect(url_for('my_profile', token=token))
 
-	return render_template('edit_profile.html', user_id=user_id, name=name, bio=bio, username=username, logged_in=True)
+	return render_template('edit_profile.html', token=token, name=name, bio=bio, username=username, logged_in=True)
 
 
 # Route to change a profile picture
-@app.route('/change-profile-pic')
-def change_profile_pic():
-	user_id = request.args.get('user_id')
-	return render_template('change_profile_pic.html', user_id=user_id, logged_in=True)
+@app.route('/change-profile-pic/<token>')
+def change_profile_pic(token):
+	# check if the user is still authenticated
+	user_id = authenticate_token(token)
+	if user_id == -1:
+		flash('Login expired due to inactivity')
+		return redirect(url_for('login'))
+
+	return render_template('change_profile_pic.html', token=token, logged_in=True)
 
 
 # Route to execute the actual profile pic change
-@app.route('/execute-change-profile-pic', methods=['POST'])
-def execute_change_profile_pic():
-	user_id = request.args.get('user_id')
+@app.route('/execute-change-profile-pic/<token>', methods=['POST'])
+def execute_change_profile_pic(token):
+	# check if the user is still authenticated
+	user_id = authenticate_token(token)
+	if user_id == -1:
+		flash('Login expired due to inactivity')
+		return redirect(url_for('login'))
 
 	user_info = get_user_info(user_id)
 	name = user_info[0][1]
@@ -143,74 +168,93 @@ def execute_change_profile_pic():
 		else:
 			upload_blob(f, profile_location)
 			edit_user_info(user_id, name, bio, username, password, 'https://storage.googleapis.com/social_net_images/'+profile_location, num_posts, profile_count+1)
-			print("executed 2")
 
 
-	return render_template('my_profile.html', user_id=user_id, name=name, bio=bio, profile_pic=get_user_info(user_id)[0][3], username=username, logged_in=True)
+	return render_template('my_profile.html', token=token, name=name, bio=bio, profile_pic=get_user_info(user_id)[0][3], username=username, logged_in=True)
 
 
 # Route to bring a logged in user to a page where they can logout
 @app.route('/logout')
 def logout():
-	return redirect(url_for('feed'))
+	return redirect(url_for('login'))
 
 
 # Route to allow a user to create a new post
-@app.route('/new-post')
-def new_post():
-	user_id = request.args.get('user_id')
-	return render_template('new_post.html', user_id=user_id, logged_in=True)
+@app.route('/new-post/<token>')
+def new_post(token):
+	# check if the user is still authenticated
+	user_id = authenticate_token(token)
+	if user_id == -1:
+		flash('Login expired due to inactivity')
+		return redirect(url_for('login'))
+
+	return render_template('new_post.html', token=token, logged_in=True)
 
 
 # Route to create a new post based on the form data from the new post page
-@app.route('/new-post-execute', methods=['POST'])
-def new_post_execute():
-	user_id=request.args.get('user_id')
+@app.route('/new-post-execute/<token>', methods=['POST'])
+def new_post_execute(token):
+	# check if the user is still authenticated
+	user_id = authenticate_token(token)
+	if user_id == -1:
+		flash('Login expired due to inactivity')
+		return redirect(url_for('login'))
 
 	# get form data
 	f = request.files['file']
+
+	# check for valid file type, if not valid redirect to profile page
+	file_validity = check_valid_file(f)
+	if not file_validity:
+		return redirect(url_for('my_profile', token=token))
+
+	f.seek(0)
 	caption = request.form['caption']
 
 	add_post(user_id, f, caption)
 
-	return redirect(url_for('my_profile', user_id=user_id))
+	return redirect(url_for('my_profile', token=token))
 
 # Route for a user to find other users
 # Lists and links to all users in the database
-@app.route('/find_users')
-def find_users():
-	user_id = request.args.get('user_id')
-	logged_in = request.args['logged_in']
-
-	# get boolean value of logged_in string
-	if logged_in == "True":
-		logged_in = True
-	else:
+@app.route('/find_users/<token>')
+def find_users(token):
+	# if the token is default -1 then the user is not logged in
+	if token == "-1":
 		logged_in = False
-
-
+		user_id = -1
+	else:
+		# check if the user is still authenticated
+		user_id = authenticate_token(token)
+		if user_id == -1:
+			flash('Login expired due to inactivity')
+			return redirect(url_for('login'))
+		logged_in = True
 
 	users = get_users()
 
-	int_user_id = int(user_id) # must be made to compare to user data so that the user doesn't see their own name
-
-	return render_template('find_users.html', user_id=user_id, logged_in=logged_in, users=users, int_user_id=int_user_id)
+	return render_template('find_users.html', token=token, logged_in=logged_in, users=users, user_id=user_id)
 
 
 # Route to display the profile information of a certain user given user id
-@app.route('/profile/<profile_id>')
-def profile(profile_id):
-
-	logged_in = request.args.get('logged_in')
-	user_id = request.args.get('user_id')
+@app.route('/profile/<profile_id>/<token>')
+def profile(profile_id, token):
+	# if the token is default -1 then the user is not logged in
+	if token == "-1":
+		logged_in = False
+	else:
+		# check if the user is still authenticated
+		user_id = authenticate_token(token)
+		if user_id == -1:
+			flash('Login expired due to inactivity')
+			return redirect(url_for('login'))
+		logged_in = True
 
 	# if the user id and the profile id are the same then it is this user
 	# redirect to my_profile
-	if int(user_id) == int(profile_id):
-		return redirect(url_for('my_profile', user_id=user_id))
-
-	# get boolean value of logged_in string
-	logged_in = get_bool(logged_in)
+	if logged_in:
+		if user_id == int(profile_id):
+			return redirect(url_for('my_profile', token=token))
 
 	# get the data about the profile in question
 	profile_info = get_user_info(profile_id)
@@ -221,7 +265,6 @@ def profile(profile_id):
 
 	posts = get_posts(profile_id) # posts for this profile
 
-
 	following = False
 	if logged_in: # if not logged in then following defaults to false, follow will link to login page
 		all_followed_users = get_following(user_id)
@@ -230,57 +273,77 @@ def profile(profile_id):
 		if int(profile_id) in all_followed_users:
 			following = True
 
-	return render_template('profile.html', user_id=user_id, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following)
+	return render_template('profile.html', token=token, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following)
 
 # Route that is executed when one user clicks the button to follow or unfollow another
-@app.route('/follow-operation')
-def follow_operation():
+@app.route('/follow-operation/<token>')
+def follow_operation(token):
+	# if the token is default -1 then the user is not logged in
+	if token == "-1":
+		logged_in = False
+	else:
+		# check if the user is still authenticated
+		user_id = authenticate_token(token)
+		if user_id == -1:
+			flash('Login expired due to inactivity')
+			return redirect(url_for('login'))
+		logged_in = True
 
 	# get profile data to pass back into the profile template
-	user_id = request.args.get('user_id')
 	profile_id = request.args.get('profile_id')
 	name = request.args.get('name')
 	bio = request.args.get('bio')
 	profile_pic = request.args.get('profile_pic')
 	username = request.args.get('username')
 	following = request.args.get('following')
-	logged_in = request.args.get('logged_in')
 
-	# get boolean value of logged_in string and following string
-	logged_in = get_bool(logged_in)
-	following = get_bool(logged_in)
+	# get boolean value of following string
+	following = get_bool(following)				# ???????? MAYbe i changed something bad
 
 	following = follow(user_id, profile_id)
 
 	posts = get_posts(profile_id)
 
-	return render_template('profile.html', user_id=user_id, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following)
+	return render_template('profile.html', token=token, logged_in=logged_in, profile_id=profile_id, name=name, bio=bio, profile_pic=profile_pic, username=username, posts=posts, following=following)
 
 
 # Route that shows a user's followers
 # Exectues when clicking links to a user's followers from their profile page
-@app.route('/<profile_id>/followers')
-def followers(profile_id):
+@app.route('/<profile_id>/followers/<token>')
+def followers(profile_id, token):
+	# if the token is default -1 then the user is not logged in
+	if token == "-1":
+		logged_in = False
+	else:
+		# check if the user is still authenticated
+		user_id = authenticate_token(token)
+		if user_id == -1:
+			flash('Login expired due to inactivity')
+			return redirect(url_for('login'))
+		logged_in = True
+
 	# get follower ids then get all info about each id
 	followers_ids = get_followers(profile_id)
 	followers = []
 	for id in followers_ids:
 		followers.append(get_user_info(id))
 
-	print(followers)
-
-
-	logged_in = get_bool(request.args.get('logged_in'))
-	user_id = request.args.get('user_id')
-
 	# render template with the followers passed in and the boolean followers set true, meaning this is a followers list
-	return render_template('followers_or_following.html', users=followers, followers=True, user_id=user_id, logged_in=logged_in)
+	return render_template('followers_or_following.html', users=followers, followers=True, token=token, logged_in=logged_in)
 
 # Route to show the user's that a given user follows
-@app.route('/<profile_id>/following')
-def following(profile_id):
-	logged_in = get_bool(request.args.get('logged_in'))
-	user_id = request.args.get('user_id')
+@app.route('/<profile_id>/following/<token>')
+def following(profile_id, token):
+	# if the token is default -1 then the user is not logged in
+	if token == "-1":
+		logged_in = False
+	else:
+		# check if the user is still authenticated
+		user_id = authenticate_token(token)
+		if user_id == -1:
+			flash('Login expired due to inactivity')
+			return redirect(url_for('login'))
+		logged_in = True
 
 	following_ids = get_following(profile_id) # get following of this user
 	
@@ -289,18 +352,16 @@ def following(profile_id):
 	for id in following_ids:
 		following.append(get_user_info(id))
 
-	print(following)
-
 	# render template with the following passed in and the boolean followers set false, meaning this is a list of users followed
-	return render_template('followers_or_following.html', users=following, followers=False, user_id=user_id, logged_in=logged_in)
+	return render_template('followers_or_following.html', users=following, followers=False, token=token, logged_in=logged_in)
 
 # Endpoint to delete a post
 # takes 
-@app.route('/delete-post/<user_id>/<post_id>')
-def delete_post(user_id, post_id):
+@app.route('/delete-post/<post_id>/<token>')
+def delete_post(post_id, token):
 	delete_post_operation(post_id)
 
-	return redirect(url_for('my_profile', user_id=user_id))
+	return redirect(url_for('my_profile', token=token))
 
 
 

@@ -22,7 +22,7 @@ jwt_key = "ITENGPRFWCRE" # used for encoding and decoding json web token for aut
 def get_token(user_id):
 	# get current time and add 6 hours to represent the time when the user's login expires
 	current_time = datetime.datetime.now()
-	time_to_expiration = datetime.timedelta(hours = 6)
+	time_to_expiration = datetime.timedelta(hours = 8)
 	expiration_time = current_time + time_to_expiration
 	expiration_string = expiration_time.strftime("%m/%d/%Y, %H:%M:%S") # convert to string to use in payload
 
@@ -36,8 +36,6 @@ def get_token(user_id):
 
 	return encoded
 
-
-
 # Given a token this method authenticates the user
 def authenticate_token(token):
 	decoded = jwt.decode(token, jwt_key, algorithms="HS256") # decode using the same key and algorithm to encode
@@ -45,10 +43,10 @@ def authenticate_token(token):
 	expiration = datetime.datetime.strptime(decoded["expiration_time"], '%m/%d/%Y, %H:%M:%S') # convert expiration to datetime
 
 	# compare expiration to current time, if it is too late then logout
-	if expiration < datetime.now():
-		return False
+	if expiration < datetime.datetime.now():
+		return -1
 
-	return True
+	return decoded["user_id"]
 
 # Establishes connection with Google Cloud SQL database
 def get_connection():
@@ -96,7 +94,7 @@ def add_user(name, bio, username, password):
 
 	conn.close()
 
-	return user_id
+	return user_id[0]
 
 
 # Function to get a user's information from Cloud SQL
@@ -325,6 +323,10 @@ def delete_post_operation(post_id):
 
 	conn.commit()
 	conn.close()
+
+# Function to check if a file has a valid extension and can be uploaded
+def check_valid_file(f):
+	return True
 
 
 

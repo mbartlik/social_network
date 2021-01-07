@@ -4,7 +4,7 @@
 
 <h1>{% block title %}New Post{% endblock %}</h1>
 
-<form action = "{{ url_for('new_post_execute', user_id=user_id) }}" method = "POST" 
+<form action = "{{ url_for('new_post_execute', token=token) }}" method = "POST" 
 	         enctype = "multipart/form-data">
 
 			Image: <input type = "file" name = "file" />
