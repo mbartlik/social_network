@@ -13,7 +13,8 @@
 	<div><b>Bio</b></div>
 	<div><textarea name='bio'>{{ bio }}</textarea></div>
 	<hr>
-	<div><button type="submit" value="Submit">Submit</button>
+	<a href="{{ url_for('my_profile', token=token) }}">cancel</a>
+	<button type="submit" value="Submit">Submit</button>
 </form>
 	
 {% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{% block title %}About{% endblock %}</h1>
+
+<p>This is a web application designed as a project to demonstrate skills in full stack web development as well as general skills in software engineering. The app as a whole is run on Google App Engine, and the backend is coded in python and built on the Flask framework. For data storage it relies on both Google Cloud SQL and a Google Cloud Storage bucket used to store images. For security it implements JSON Web Tokens, where upon login each user is assigned a unique encrypted token that will last 6 hours. With every action on the application the user is authenticated to see if their token is valid. Source code and further details can be found in the link below. </p>
+
+<a href="https://github.com/mbartlik/social_network" target="_blank">https://github.com/mbartlik/social_network</a>
+
+<hr>
+
+<p>Note: This project's purpose was largely for personal development and demonstration of skills. It is not designed to be marketable to the general population. 
+
+
+{% endblock %}

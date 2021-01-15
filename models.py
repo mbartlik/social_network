@@ -342,5 +342,22 @@ def delete_post_operation(post_id):
 	conn.commit()
 	conn.close()
 
+# Function to check if a username is already in the database
+def check_existing_username(username):
+	conn = get_connection()
+	cur = conn.cursor()
+
+	# get all usernames from the dataabse
+	cur.execute('SELECT username FROM users')
+	existing_usernames = cur.fetchall()
+	print(existing_usernames)
+
+	for entry in existing_usernames: # each entry will be a tuple with one element which is the username
+		if entry[0] == username:
+			return True
+
+	return False
+
+
 
 

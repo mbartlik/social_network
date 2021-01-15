@@ -58,6 +58,10 @@ def login():
 @app.route('/create-account', methods=['GET','POST'])
 def create_account():
 
+	name = "" # these filler values will be loaded in if the page is loaded for the first time
+	username = ""
+	bio = ""
+
 	# if the method is post then the user entered account data
 	# must check for valid inputs then add them to the database
 	if request.method=='POST':
@@ -67,14 +71,39 @@ def create_account():
 		password = request.form['password']
 		confirm_password = request.form['confirm_password']
 
-		# TODO: ERROR CHECKING HERE
+		# error checking for create account input forms
+		# check for any empty field
+		add_new_user = True # set this to False if any invalid field
+		if name == "":
+			add_new_user = False
+			flash('Make sure to give yourself a name!')
+		if username == "":
+			add_new_user = False
+			flash('Make sure to give yourself a username!')
+		if bio == "":
+			add_new_user = False
+			flash('Make sure to give yourself a bio!')
+		if len(password) < 4:
+			add_new_user = False
+			flash('Your password must be at least 4 characters')
 
-		user_id = add_user(name, bio, username, password)
-		token = get_token(user_id)
+		# check for matching passwords
+		if password != confirm_password:
+			add_new_user = False
+			flash('Check again to make sure that your passwords match')
 
-		return redirect(url_for('feed', token=token))
+		# check for existing username
+		if check_existing_username(username):
+			add_new_user = False
+			flash('That username already exists, pick another one')
 
-	return render_template('create_account.html', logged_in=False, token=-1)
+		if add_new_user:
+			user_id = add_user(name, bio, username, password)
+			token = get_token(user_id)
+			return redirect(url_for('feed', token=token))
+
+
+	return render_template('create_account.html', logged_in=False, token=-1, name=name, username=username, bio=bio)
 
 
 # Route for a user to view their profile
@@ -115,12 +144,34 @@ def edit_profile(token):
 	num_posts = user_info[0][6]
 	profile_count = user_info[0][7]
 
+	original_username = username # will be used for checking if the new username exists already or not
+
 	if request.method == 'POST':
 		name = request.form['name']
 		bio = request.form['bio']
 		username = request.form['username']
-		edit_user_info(user_id, name, bio, username, password, profile_pic, num_posts, profile_count)
-		return redirect(url_for('my_profile', token=token))
+
+		# error checking for create account input forms
+		# check for any empty field
+		update_profile = True # set this to False if any invalid field
+		if name == "":
+			update_profile = False
+			flash('Make sure to give yourself a name!')
+		if username == "":
+			update_profile = False
+			flash('Make sure to give yourself a username!')
+		if bio == "":
+			update_profile = False
+			flash('Make sure to give yourself a bio!')
+
+		# check for existing username
+		if check_existing_username(username) and username != original_username:
+			update_profile = False
+			flash('That username already exists, pick another one')
+
+		if update_profile:
+			edit_user_info(user_id, name, bio, username, password, profile_pic, num_posts, profile_count)
+			return redirect(url_for('my_profile', token=token))
 
 	return render_template('edit_profile.html', token=token, name=name, bio=bio, username=username, logged_in=True)
 
@@ -219,7 +270,7 @@ def new_post_execute(token):
 
 	# if the image is invalid flash warning and redirect to new post page
 	if not valid:
-		flash("Something went wrong. Make sure your image is of a supported type like JPG or PNG.")
+		flash("Something went wrong. Make sure your image is of a supported file type like JPG or PNG.")
 		return redirect(url_for('new_post', token=token))
 
 	return redirect(url_for('my_profile', token=token))
@@ -372,6 +423,22 @@ def delete_post(post_id, token):
 
 	return redirect(url_for('my_profile', token=token))
 
+# Endpoint to redirect to a page that is solely to explain the basics of this project
+@app.route('/about/<token>')
+def about(token):
+	# if the token is default -1 then the user is not logged in
+	if token == "-1":
+		logged_in = False
+	else:
+		# check if the user is still authenticated
+		user_id = authenticate_token(token)
+		if user_id == -1:
+			flash('Login expired due to inactivity')
+			return redirect(url_for('login'))
+		logged_in = True
+
+	return render_template('about.html', token=token, logged_in=logged_in)
+
 
 
 
@@ -385,14 +452,27 @@ if __name__ == '__main__':
 
 # TODO
 # Add error handling for all inputs
-# Make password field hidden
-# Make it so you can't use a username that is taken
-# Edit profile
-
-# maybe find way to compress images on google cloud storage uploads
-# Find how to check if an image is the right file type
+# Make it so you can't use a username that is taken or change to a username that is taken
 # add a post preview before actually posting
-# delete posts
 # comment code better - add headers on top of documents and do better with commenting each endpoint - explain parameters
-# TOKENS for users being logged in
-# Figure out picture upload bug for large images
+# do the README
+# Make something so it only loads a certain number of posts at once rather than all at once
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

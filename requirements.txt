@@ -1,0 +1,13 @@
+google
+google.cloud
+google-api-python-client
+google-cloud
+google-cloud-vision
+google.cloud.bigquery
+google.cloud.storage
+pymysql
+PyJWT
+datetime
+Pillow
+flask
+flask_cors

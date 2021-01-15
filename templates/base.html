@@ -12,7 +12,7 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-light bg-light">
-        <a class="navbar-brand" href="{{ url_for('feed', token=token)}}">Social Network</a>
+        <a class="navbar-brand" href="{{ url_for('feed', token=token)}}">Max's Social Network</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -31,6 +31,10 @@
 
                 <li class="nav-item active">
                     <a class="nav-link" href="{{ url_for('new_post', token=token) }}">New Post</a>
+                </li>
+
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('about', token=token) }}">About this Project</a>
                 </li>
 
                 </ul>
@@ -61,6 +65,10 @@
 
                 <li class="nav-item active">
                     <a class="nav-link" href="{{ url_for('find_users', token=-1) }}">Find Users</a>
+                </li>
+
+                 <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('about', token=token) }}">About this Project</a>
                 </li>
 
                 </ul>
