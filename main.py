@@ -450,29 +450,4 @@ if __name__ == '__main__':
 
 # start cloud sql proxy on local - ./cloud_sql_proxy -instances=social-300422:us-east4:user-images=tcp:3306
 
-# TODO
-# Add error handling for all inputs
-# Make it so you can't use a username that is taken or change to a username that is taken
-# add a post preview before actually posting
-# comment code better - add headers on top of documents and do better with commenting each endpoint - explain parameters
-# do the README
-# Make something so it only loads a certain number of posts at once rather than all at once
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
