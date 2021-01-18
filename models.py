@@ -15,7 +15,7 @@ db_password = '1234'
 db_name = 'master'
 db_connection_name = 'social-300422:us-east4:user-images'
 
-jwt_key = "ITENGPRFWCRE" # used for encoding and decoding json web token for authentication
+jwt_key = "ITENYTORREG" # used for encoding and decoding json web token for authentication
 
 
 # Given a username and password this function generates a json web token
@@ -122,7 +122,7 @@ def edit_user_info(user_id, name, bio, username, password, profile_pic, num_post
 
 
 # function to upload an image to google cloud storage
-def upload_blob(file, destination_blob_name):
+def upload_blob_from_file(file, destination_blob_name):
 	# open file with PIL Image to see if the file is of a proper type
 	try:
 		image = Image.open(file)
@@ -139,6 +139,12 @@ def upload_blob(file, destination_blob_name):
 	blob.upload_from_file(file)
 
 	return True
+
+def upload_blob_data(data, destination_blob_name):
+	# boilerplate google cloud storage upload
+	storage_client = storage.Client()
+	bucket = storage_client.bucket('social_net_data')
+	blob = bucket.blob(destination_blob_name)
 
 # Function to delete a blob from google cloud storage
 def delete_blob(blob_name):
@@ -175,7 +181,7 @@ def add_post(user_id, file, caption):
 	post_image_url = 'https://storage.googleapis.com/social_net_images/' + post_image_identifier
 	
 	# upload image
-	valid = upload_blob(file, post_image_identifier)
+	valid = upload_blob_from_file(file, post_image_identifier)
 
 	# if the image was invalid then pass the false back through to main
 	if not valid:
@@ -244,6 +250,8 @@ def get_following(user_id):
 
 	conn.close()
 
+	print(following)
+
 	return following
 
 # Function to get a list of user ids that follow a given user id
@@ -287,9 +295,6 @@ def follow(user_id, profile_id):
 	user_id = int(user_id)
 	profile_id = int(profile_id)
 
-	print(following_list)
-	print(profile_id)
-
 	if profile_id in following_list: # already following, unfollow
 		following_list.remove(profile_id)
 		following = False # resulting follow relationship to be returned
@@ -297,11 +302,13 @@ def follow(user_id, profile_id):
 		following_list.append(profile_id)
 		following = True
 
+	following_list = str(following_list)
+
 	conn = get_connection()
 	cur = conn.cursor()
 
 	# update database
-	cur.execute('UPDATE users SET following=%s WHERE user_id=%s', (str(following_list), user_id))
+	cur.execute('UPDATE users SET following=%s WHERE user_id=%s', (following_list, user_id))
 	conn.commit()
 	conn.close()
 
@@ -357,7 +364,5 @@ def check_existing_username(username):
 			return True
 
 	return False
-
-
 
 

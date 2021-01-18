@@ -11,3 +11,4 @@ datetime
 Pillow
 flask
 flask_cors
+gunicorn
