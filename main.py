@@ -86,6 +86,9 @@ def create_account():
 		if len(password) < 4:
 			add_new_user = False
 			flash('Your password must be at least 4 characters')
+		if " " in username:
+			add_new_user = False
+			flash('You cannot have spaces in your username')
 
 		# check for matching passwords
 		if password != confirm_password:
@@ -120,6 +123,8 @@ def my_profile(token):
 	bio = user_info[0][2]
 	profile_pic = user_info[0][3]
 	username = user_info[0][4]
+
+	print(profile_pic)
 
 	posts = get_posts(user_id)
 
@@ -163,6 +168,9 @@ def edit_profile(token):
 		if bio == "":
 			update_profile = False
 			flash('Make sure to give yourself a bio!')
+		if " " in username:
+			update_profile = False
+			flash('You cannot have spaces in your username')
 
 		# check for existing username
 		if check_existing_username(username) and username != original_username:
@@ -213,14 +221,14 @@ def execute_change_profile_pic(token):
 		# url location of the profile pic in google cloud storage bucket
 		profile_location = 'profile_pic-' + str(user_id) + '-' + str(profile_count)
 
-		if user_info[0][3] == 'https://storage.googleapis.com/social_net_images/generic_profile_pic.png':
+		if user_info[0][3] == 'https://storage.googleapis.com/social-network-images/generic_profile_pic.png':
 			valid = upload_blob_from_file(f, profile_location)
 			# if the image is invalid flash warning and redirect to new post page
 			if not valid:
 				flash("Something went wrong. Make sure your image is of a supported type like JPG or PNG.")
 				return redirect(url_for('change_profile_pic', token=token))
 
-			edit_user_info(user_id, name, bio, username, password, 'https://storage.googleapis.com/social_net_images/'+profile_location, num_posts, profile_count+1)
+			edit_user_info(user_id, name, bio, username, password, 'https://storage.googleapis.com/social-network-images/'+profile_location, num_posts, profile_count+1)
 		else:
 			valid = upload_blob_from_file(f, profile_location)
 			# if the image is invalid flash warning and redirect to new post page
@@ -228,7 +236,7 @@ def execute_change_profile_pic(token):
 				flash("Something went wrong. Make sure your image is of a supported type like JPG or PNG.")
 				return redirect(url_for('change_profile_pic', token=token))
 
-			edit_user_info(user_id, name, bio, username, password, 'https://storage.googleapis.com/social_net_images/'+profile_location, num_posts, profile_count+1)
+			edit_user_info(user_id, name, bio, username, password, 'https://storage.googleapis.com/social-network-images/'+profile_location, num_posts, profile_count+1)
 
 
 	return redirect(url_for('my_profile', token=token))
@@ -328,8 +336,6 @@ def profile(profile_id, token):
 	following = False
 	if logged_in: # if not logged in then following defaults to false, follow will link to login page
 		all_followed_users = get_following(user_id)
-		print(all_followed_users)
-		print(profile_id)
 		if int(profile_id) in all_followed_users:
 			following = True
 
@@ -443,7 +449,7 @@ def about(token):
 
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	app.run()
 
 
 

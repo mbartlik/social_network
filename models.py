@@ -13,7 +13,7 @@ ROOT = path.dirname(path.relpath(__file__)) # gets the location on computer of t
 db_user = 'root'
 db_password = '1234'
 db_name = 'master'
-db_connection_name = 'social-300422:us-east4:user-images'
+db_connection_name = 'maxs-social-network:us-east4:user-data'
 
 jwt_key = "ITENYTORREG" # used for encoding and decoding json web token for authentication
 
@@ -27,7 +27,7 @@ def get_token(user_id):
 	expiration_time = current_time + time_to_expiration
 	expiration_string = expiration_time.strftime("%m/%d/%Y, %H:%M:%S") # convert to string to use in payload
 
-	# generate payload which will go 
+	# generate payload which will be encoded into the jwt
 	payload = {
 		"user_id": user_id,
 		"expiration_time": expiration_string
@@ -83,7 +83,7 @@ def add_user(name, bio, username, password):
 
 	# TODO-add check for existing username
 
-	profile_pic = 'https://storage.googleapis.com/social_net_images/generic_profile_pic.png'
+	profile_pic = 'https://storage.googleapis.com/social-network-images/generic_profile_pic.png'
 
 	conn = get_connection()
 	cur = conn.cursor()
@@ -133,24 +133,18 @@ def upload_blob_from_file(file, destination_blob_name):
 
 	# boilerplate google cloud storage upload
 	storage_client = storage.Client()
-	bucket = storage_client.bucket('social_net_images')
+	bucket = storage_client.bucket('social-network-images')
 	blob = bucket.blob(destination_blob_name)
 
 	blob.upload_from_file(file)
 
 	return True
 
-def upload_blob_data(data, destination_blob_name):
-	# boilerplate google cloud storage upload
-	storage_client = storage.Client()
-	bucket = storage_client.bucket('social_net_data')
-	blob = bucket.blob(destination_blob_name)
-
 # Function to delete a blob from google cloud storage
 def delete_blob(blob_name):
 	storage_client = storage.Client()
 
-	bucket = storage_client.bucket('social_net_images')
+	bucket = storage_client.bucket('social-network-images')
 	blob = bucket.blob(blob_name)
 	blob.delete()
 
@@ -178,7 +172,7 @@ def add_post(user_id, file, caption):
 
 	# this is the url of where the image will be stored in the google cloud storage bucket
 	post_image_identifier = 'user-' + str(user_id) + '-post-' + str(num_posts)
-	post_image_url = 'https://storage.googleapis.com/social_net_images/' + post_image_identifier
+	post_image_url = 'https://storage.googleapis.com/social-network-images/' + post_image_identifier
 	
 	# upload image
 	valid = upload_blob_from_file(file, post_image_identifier)
